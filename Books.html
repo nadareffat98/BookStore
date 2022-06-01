@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="./vueversion3.js"></script>
+    <script src="./books.js"></script>
+    <title>books</title>
+    <style>
+        .more {
+            color: green;
+            font-weight: bold;
+        }
+
+        .less {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="maindiv" class="container">
+     
+        <div class="d-flex justify-content-between text-light bg-dark align-items-baseline p-3">
+            <button class="btn btn-warning" @click="isWhishlist=false">Books</button>
+            <button class="btn btn-primary" @click="isWhishlist=true">wishlist</button>
+
+        </div>
+        <div class="row d-flex justify-content-around text-center m-2 " v-if="isWhishlist==false">
+            <div v-for="book in books" :key="book.isbn" class="card p-3" style="width: 21rem;">
+                <img class="card-img-top" :src="book.image" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title text-center">{{book.name}}</h5>
+                </div>
+                <div class="d-flex  p-2 my-2 justify-content-around " >
+                        <div >Author: {{book.author}}</div>
+                        <div >Category: {{book.category}}</div>
+                </div>
+                <div class="d-flex  p-2 my-2 justify-content-around">
+                        <div :class="[book.numOfpages>50?'more':'',book.numOfpages<50?'less':'']" >Pages: {{book.numOfpages}}</div>
+                        <div >ISBN: {{book.isbn}}</div>
+                </div>
+                <div class="d-flex  p-2 my-2 justify-content-around">
+                    <div >Price: {{handleCurrency(book.price)}}</div>
+                    <button class="btn btn-primary" @click="addToWish(book)" :disabled="book.isFave == true">Add to
+                        wishlist</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row" v-if="isWhishlist==true">
+            <h2 class="text-danger text-center m-auto col-12 my-3" v-if="wishlist.length==0"> You have no books in
+                whishlist
+            </h2>
+            <div class="table-responsive">
+
+                <table class="table table-hover table-bordered table-striped text-center" v-if="wishlist.length>0">
+                    <thead>
+                        <th>ISBN</th>
+                        <th>Name</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </thead>
+
+                    <tbody>
+                        <tr v-for="book in wishlist">
+                            <td>{{book.isbn}}</td>
+                            <td>{{book.name}}</td>
+                            <td>{{book.author}}</td>
+                            <td>{{book.category}}</td>
+                            <td>{{handleCurrency(book.price)}}</td>
+                            <td><button class="btn-danger" @click="removeBook(book)">Remove</button></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2">Total Price:</th>
+                            <td colspan="3">{{handleCurrency(getTotalPrice())}}</td>
+                            <td>
+                                <button class="btn btn-primary" @click="checkout">
+                                    checkout
+                                </button>
+                            </td>
+                        </tr>
+
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+
+        <script>
+
+            const app = Vue.createApp({
+                data: () => ({
+                    books: books,
+                    isWhishlist: false,
+                    wishlist: []
+
+
+
+
+
+                }),
+                methods: {
+                    addToWish(book) {
+                        book.isFave = true;
+                        this.wishlist.push(book);
+                        console.log(this.wishlist)
+
+                    },
+
+                    removeBook(book) {
+                        this.wishlist.splice(this.wishlist.indexOf(book), 1);
+                        book.isFave = false;
+                    },
+                    handleCurrency(value) {
+                        return new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "USD",
+                        }).format(value);
+                    },
+                    getTotalPrice() {
+                        let total = 0;
+
+                        for (book of this.wishlist) {
+
+                            total += book.price;
+                        }
+                        return total;
+                    },
+                    checkout() {
+                        let conf = window.confirm("Are you sure you want to checkout?");
+                        if (conf) {
+                            for (book of this.wishlist) {
+
+                                book.isFave = false;
+                            }
+                            this.wishlist = [];
+                        }
+                    },
+
+
+                }
+
+
+
+            });
+
+            app.mount("#maindiv");
+        </script>
+</body>
+
+</html>
